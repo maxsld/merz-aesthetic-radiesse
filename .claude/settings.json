@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/maxenssoldan/Documents/Codage -maxdepth 3 -name \"*.html\" | grep -i ultherapy)",
+      "Read(//Users/maxenssoldan/Documents/Codage/**)"
+    ]
+  }
+}
