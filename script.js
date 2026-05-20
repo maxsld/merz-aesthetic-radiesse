@@ -24,11 +24,21 @@ if (siteHeader && siteMenuToggle) {
 
 /* ---- Sticky header ---- */
 if (siteHeader) {
-  const syncHeaderState = () => {
-    siteHeader.classList.toggle("is-scrolled", window.scrollY > 12);
+  const syncHeaderMetrics = () => {
+    document.documentElement.style.setProperty("--header-height", `${siteHeader.offsetHeight}px`);
   };
+
+  const syncHeaderState = () => {
+    const isScrolled = window.scrollY > 12;
+    siteHeader.classList.toggle("is-scrolled", isScrolled);
+    document.body.classList.toggle("header-is-fixed", isScrolled);
+    syncHeaderMetrics();
+  };
+
+  syncHeaderMetrics();
   syncHeaderState();
   window.addEventListener("scroll", syncHeaderState, { passive: true });
+  window.addEventListener("resize", syncHeaderState);
 }
 
 /* ---- Active nav link on scroll ---- */
@@ -68,30 +78,28 @@ if (siteMenuLinks.length) {
   syncActiveMenuLink();
 }
 
-/* ---- Video player ---- */
+/* ---- Video players ---- */
 const moaSection = document.querySelector(".moa-section");
-const benefitsVideoBlock = document.querySelector(".benefits-video-block");
-const benefitsVideo = document.querySelector(".benefits-video");
 
-if (benefitsVideoBlock && benefitsVideo) {
-  const toggleButton = benefitsVideoBlock.querySelector(".video-toggle");
-  const muteButton = benefitsVideoBlock.querySelector(".video-mute");
-  const progress = benefitsVideoBlock.querySelector(".video-progress");
-  const time = benefitsVideoBlock.querySelector(".video-time");
+const setupCustomVideoPlayer = (container, video, options = {}) => {
+  if (!container || !video) return null;
+
+  const toggleButton = container.querySelector(".video-toggle");
+  const muteButton = container.querySelector(".video-mute");
+  const progress = container.querySelector(".video-progress");
+  const time = container.querySelector(".video-time");
   const toggleIcon = toggleButton?.querySelector("i");
   const muteIcon = muteButton?.querySelector("i");
   let controlsTimer;
 
-  benefitsVideo.removeAttribute("controls");
+  video.removeAttribute("controls");
 
   const showControlsBriefly = () => {
-    benefitsVideoBlock.classList.add("is-controls-visible");
+    container.classList.add("is-controls-visible");
     window.clearTimeout(controlsTimer);
-    if (!benefitsVideo.paused) {
-      controlsTimer = window.setTimeout(() => {
-        benefitsVideoBlock.classList.remove("is-controls-visible");
-      }, 1600);
-    }
+    controlsTimer = window.setTimeout(() => {
+      container.classList.remove("is-controls-visible");
+    }, options.controlsTimeout ?? 1600);
   };
 
   const formatVideoTime = (seconds) => {
@@ -102,58 +110,76 @@ if (benefitsVideoBlock && benefitsVideo) {
   };
 
   const updatePlayState = () => {
-    const isPaused = benefitsVideo.paused;
-    benefitsVideoBlock.classList.toggle("is-video-paused", isPaused);
+    const isPaused = video.paused;
+    if (options.pausedClass) container.classList.toggle(options.pausedClass, isPaused);
     toggleButton?.setAttribute("aria-label", isPaused ? "Lire la vidéo" : "Mettre en pause");
     toggleIcon?.classList.toggle("fa-play", isPaused);
     toggleIcon?.classList.toggle("fa-pause", !isPaused);
   };
 
   const updateMuteState = () => {
-    const isMuted = benefitsVideo.muted;
+    const isMuted = video.muted;
     muteButton?.setAttribute("aria-label", isMuted ? "Activer le son" : "Couper le son");
     muteIcon?.classList.toggle("fa-volume-xmark", isMuted);
     muteIcon?.classList.toggle("fa-volume-high", !isMuted);
   };
 
   const updateProgress = () => {
-    const duration = benefitsVideo.duration || 0;
-    const percent = duration ? (benefitsVideo.currentTime / duration) * 100 : 0;
+    const duration = video.duration || 0;
+    const percent = duration ? (video.currentTime / duration) * 100 : 0;
     if (progress) {
       progress.value = String(percent);
       progress.style.setProperty("--progress", `${percent}%`);
     }
-    if (time) time.textContent = formatVideoTime(benefitsVideo.currentTime);
+    if (time) time.textContent = formatVideoTime(video.currentTime);
   };
 
   toggleButton?.addEventListener("click", () => {
-    if (benefitsVideo.paused) benefitsVideo.play().catch(() => {});
-    else benefitsVideo.pause();
+    if (video.paused) video.play().catch(() => {});
+    else video.pause();
   });
 
   muteButton?.addEventListener("click", () => {
-    benefitsVideo.muted = !benefitsVideo.muted;
+    video.muted = !video.muted;
     updateMuteState();
   });
 
-  benefitsVideo.addEventListener("click", () => {
+  video.addEventListener("click", () => {
     showControlsBriefly();
-    if (benefitsVideo.paused) benefitsVideo.play().catch(() => {});
-    else benefitsVideo.pause();
+    if (video.paused) video.play().catch(() => {});
+    else video.pause();
   });
 
   progress?.addEventListener("input", () => {
-    const duration = benefitsVideo.duration || 0;
-    if (duration) benefitsVideo.currentTime = (Number(progress.value) / 100) * duration;
+    const duration = video.duration || 0;
+    if (duration) video.currentTime = (Number(progress.value) / 100) * duration;
   });
 
-  benefitsVideoBlock.addEventListener("mousemove", showControlsBriefly);
-  benefitsVideoBlock.addEventListener("touchstart", showControlsBriefly, { passive: true });
-  benefitsVideo.addEventListener("play", updatePlayState);
-  benefitsVideo.addEventListener("pause", updatePlayState);
-  benefitsVideo.addEventListener("timeupdate", updateProgress);
-  benefitsVideo.addEventListener("loadedmetadata", updateProgress);
-  benefitsVideo.addEventListener("volumechange", updateMuteState);
+  container.addEventListener("mousemove", showControlsBriefly);
+  container.addEventListener("touchstart", showControlsBriefly, { passive: true });
+  video.addEventListener("play", updatePlayState);
+  video.addEventListener("pause", updatePlayState);
+  video.addEventListener("timeupdate", updateProgress);
+  video.addEventListener("loadedmetadata", updateProgress);
+  video.addEventListener("volumechange", updateMuteState);
+
+  if (options.startMuted) video.muted = true;
+
+  updatePlayState();
+  updateMuteState();
+  updateProgress();
+
+  return { showControlsBriefly };
+};
+
+const benefitsVideoBlock = document.querySelector(".benefits-video-block");
+const benefitsVideo = document.querySelector(".benefits-video");
+
+if (benefitsVideoBlock && benefitsVideo) {
+  setupCustomVideoPlayer(benefitsVideoBlock, benefitsVideo, {
+    pausedClass: "is-video-paused",
+    controlsTimeout: 1600,
+  });
 
   if (moaSection && "IntersectionObserver" in window) {
     const videoObserver = new IntersectionObserver((entries) => {
@@ -161,7 +187,6 @@ if (benefitsVideoBlock && benefitsVideo) {
         if (entry.isIntersecting) {
           benefitsVideo.muted = true;
           benefitsVideo.play().catch(() => {});
-          updateMuteState();
         } else {
           benefitsVideo.pause();
         }
@@ -169,10 +194,16 @@ if (benefitsVideoBlock && benefitsVideo) {
     }, { threshold: 0.48 });
     videoObserver.observe(moaSection);
   }
+}
 
-  updatePlayState();
-  updateMuteState();
-  updateProgress();
+const heroVideoShell = document.querySelector(".hero-video-shell");
+const heroVideo = document.querySelector(".hero-video");
+
+if (heroVideoShell && heroVideo) {
+  setupCustomVideoPlayer(heroVideoShell, heroVideo, {
+    controlsTimeout: 1200,
+    startMuted: true,
+  });
 }
 
 /* ---- FAQ accordion ---- */
@@ -233,27 +264,4 @@ if ("IntersectionObserver" in window) {
 
     obs.observe(indicationsMedia);
   }
-}
-
-/* ---- Benefit blocks scroll reveal ---- */
-if ("IntersectionObserver" in window) {
-  const benefitBlocks = document.querySelectorAll(".benefit-block");
-
-  benefitBlocks.forEach((block) => {
-    block.style.opacity = "0";
-    block.style.transform = "translateY(24px)";
-    block.style.transition = "opacity 0.65s ease, transform 0.65s ease";
-  });
-
-  const revealObs = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.style.opacity = "1";
-        entry.target.style.transform = "translateY(0)";
-        revealObs.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.18 });
-
-  benefitBlocks.forEach((block) => revealObs.observe(block));
 }
