@@ -482,15 +482,24 @@ body.header-is-fixed {
   pointer-events: none;
 }
 
+.hero-panel-inner {
+  width: min(100%, 1200px);
+  margin: 0 auto;
+  padding: 0 34px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* Contenu texte : décalé à droite du R (≈ 22% de la largeur du panel) */
 .hero-panel-content {
-  width: min(100%, 740px);
+  width: min(100%, 560px);
   margin-left: auto;
-  padding: clamp(24px, 3.5vw, 52px) clamp(28px, 4vw, 64px) clamp(24px, 3.5vw, 52px) clamp(96px, 10vw, 160px);
+  padding: clamp(24px, 3.5vw, 52px) 0;
   display: flex;
   flex-direction: column;
   gap: clamp(14px, 1.8vw, 22px);
   pointer-events: auto;
+  transform: translateX(clamp(160px, 11vw, 220px));
 }
 
 .hero-panel-content h1 {
@@ -568,9 +577,15 @@ body.header-is-fixed {
     background-color: #007ea8;
   }
 
+  .hero-panel-inner {
+    width: 100%;
+    padding: 0;
+  }
+
   .hero-panel-content {
     padding: 32px 22px;
     max-width: none;
+    transform: none;
   }
 }
 
@@ -1021,23 +1036,23 @@ body.header-is-fixed {
   flex: 0 0 auto;
 }
 
-.moa-step-img-placeholder {
+.moa-step-media {
   width: 100%;
   max-width: 240px;
   height: 180px;
   border-radius: 8px;
+  margin: 0;
+  overflow: hidden;
   background: linear-gradient(135deg, var(--cream) 0%, rgba(0,166,199,0.2) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255,255,255,0.55);
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0;
+  box-shadow: 0 16px 32px rgba(23, 55, 87, 0.08);
 }
 
-.moa-step-img-placeholder::after { content: "Schéma"; }
+.moa-step-media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
 
 .moa-step p {
   margin: 0;
