@@ -204,6 +204,34 @@ if (heroVideoShell && heroVideo) {
     controlsTimeout: 1200,
     startMuted: true,
   });
+
+  heroVideo.defaultMuted = true;
+  heroVideo.muted = true;
+
+  const tryPlayHeroVideo = () => {
+    heroVideo.play()
+      .then(() => {
+        heroVideoShell.classList.add("is-video-ready");
+      })
+      .catch(() => {
+        heroVideoShell.classList.remove("is-video-ready");
+      });
+  };
+
+  heroVideo.addEventListener("loadeddata", () => {
+    heroVideoShell.classList.add("is-video-ready");
+    tryPlayHeroVideo();
+  });
+
+  heroVideo.addEventListener("canplay", tryPlayHeroVideo);
+  heroVideo.addEventListener("playing", () => {
+    heroVideoShell.classList.add("is-video-ready");
+  });
+  heroVideo.addEventListener("error", () => {
+    heroVideoShell.classList.remove("is-video-ready");
+  });
+
+  window.addEventListener("load", tryPlayHeroVideo, { once: true });
 }
 
 /* ---- FAQ accordion ---- */
