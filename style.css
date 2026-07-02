@@ -842,18 +842,16 @@ body.header-is-fixed {
 }
 
 .benefit-img-placeholder::after {
-  content: "Ce n’est pas un vrai patient.";
+  content: "Image a des fins d’illustration.";
   position: absolute;
-  right: 14px;
-  bottom: 14px;
-  padding: 7px 10px;
-  border-radius: 999px;
-  background: rgba(13, 30, 48, 0.72);
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 11px;
-  line-height: 1;
+  right: 12px;
+  bottom: 10px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: 0;
   white-space: nowrap;
-  backdrop-filter: blur(8px);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 
 .benefit-img-1 { background-image: url("assets/img/img-firms.webp"); }
