@@ -1592,6 +1592,17 @@ body.header-is-fixed {
   line-height: 1.7;
 }
 
+.footer-legal-list {
+  margin: -4px 0 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.footer-legal-list li + li {
+  margin-top: 4px;
+}
+
 .footer-columns {
   padding: 34px 0;
   display: grid;
