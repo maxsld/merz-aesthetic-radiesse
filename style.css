@@ -886,11 +886,15 @@ body.header-is-fixed {
 }
 
 #benefit-3-title {
+  color: var(--navy);
   font-size: clamp(26px, 2.4vw, 34px);
+  font-weight: 400;
 }
 
 #benefit-3-title .benefit-subtitle {
+  color: var(--blue);
   font-size: inherit;
+  font-weight: 300;
 }
 
 .benefit-copy p {
@@ -936,6 +940,10 @@ body.header-is-fixed {
   color: rgba(0,0,0,0.45) !important;
   font-size: 11px !important;
   line-height: 1.5 !important;
+}
+
+.moa-footnote {
+  text-align: center;
 }
 
 .benefits-cta-block {
@@ -1468,6 +1476,14 @@ body.header-is-fixed {
   font-size: 17px;
   font-weight: 300;
   line-height: 1.7;
+}
+
+.faq-footnote {
+  max-width: 800px;
+  margin: 16px auto 0;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 /* ===================== CTA / FIND A PROVIDER ===================== */
