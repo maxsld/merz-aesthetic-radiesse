@@ -5,17 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RADIESSE® - Merzaesthetics France</title>
   <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header" aria-label="Navigation principale">
     <div class="site-header-inner">
       <a class="site-brand" href="#definition" aria-label="RADIESSE">
-        <img src="assets/img/medium-RADIESSE+ Wordmark_dark blue.jpg" alt="RADIESSE">
+        <img src="assets/img/logo-Radiesse-navy-300x45.webp" alt="RADIESSE">
       </a>
 
       <button class="site-menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Ouvrir le menu">
@@ -155,7 +153,7 @@
       </div>
 
       <div class="benefits-cta-block">
-        <a class="watch-btn" href="#praticien">Trouver RADIESSE<sup>®</sup> autour de chez moi</a>
+        <a class="watch-btn benefits-watch-btn" href="#praticien">Trouver RADIESSE<sup>®</sup> autour de chez moi</a>
       </div>
     </section>
 
@@ -247,17 +245,22 @@
           <h2 id="moa-title">Comment fonctionne <span>RADIESSE<sup>®</sup> ?</span></h2>
           <p>Avec le temps, votre peau produit moins de collagène et d’élastine<sup>4,14</sup>, responsables de la fermeté de la peau.</p>
           <div class="moa-callout">
-            <div class="moa-callout-title">
-              <span class="moa-callout-kicker">Qu’est ce qu’un</span>
-              <strong>biostimulateur régénérateur&nbsp;?</strong>
-            </div>
-            <div class="moa-callout-body">
-              <p>Un biostimulateur régénérateur injectable est un traitement esthétique qui agit avec votre peau pour relancer ses propres mécanismes de jeunesse*.</p>
-              <div class="moa-callout-points">
-                <p><i class="fa-solid fa-check" aria-hidden="true"></i><span>Il ne fait pas que combler</span></p>
-                <p><i class="fa-solid fa-check" aria-hidden="true"></i><span>Il stimule votre peau pour qu’elle se régénère elle-même</span></p>
+            <div class="moa-callout-copy">
+              <div class="moa-callout-title">
+                <span class="moa-callout-kicker">Qu’est ce qu’un</span>
+                <strong>biostimulateur régénérateur&nbsp;?</strong>
+              </div>
+              <div class="moa-callout-body">
+                <p>Un biostimulateur régénérateur injectable est un traitement esthétique qui agit avec votre peau pour relancer ses propres mécanismes de jeunesse*.</p>
+                <div class="moa-callout-points">
+                  <p><i class="fa-solid fa-check" aria-hidden="true"></i><span>Il ne fait pas que combler</span></p>
+                  <p><i class="fa-solid fa-check" aria-hidden="true"></i><span>Il stimule votre peau pour qu’elle se régénère elle-même</span></p>
+                </div>
               </div>
             </div>
+            <figure class="moa-callout-visual">
+              <img class="moa-callout-image" src="assets/img/ChatGPT Image 5 juil. 2026, 23_50_43.png" alt="Visuel RADIESSE® illustration biostimulateur régénérateur">
+            </figure>
           </div>
           <p><strong>RADIESSE<sup>®</sup> agit en 3 étapes pour améliorer la qualité de votre peau en profondeur <sup>1-4</sup>, avec des résultats visibles dès la première séance.</strong></p>
         </div>
@@ -365,10 +368,15 @@
               <button class="watch-btn cta-search-btn" type="button">Rechercher</button>
             </div>
             <p class="faq-footnote cta-footnote">*Centre commandant régulièrement du Radiesse<sup>®</sup> (consommation équivalente à 15 à 20 seringues ou plus de Radiesse<sup>®</sup> par an).</p>
+            <div id="doclocator-results" hidden>
+              <p id="doclocator-count"></p>
+              <ul id="doclocator-list"></ul>
+            </div>
           </div>
 
-          <div class="cta-map" aria-hidden="true">
-            <iframe class="cta-map-frame" src="https://www.google.com/maps?q=Paris+France&z=12&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Carte Google Maps praticiens RADIESSE®"></iframe>
+          <div class="cta-map">
+            <iframe class="cta-map-frame" src="https://www.google.com/maps?q=Paris+France&z=12&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Carte Google Maps praticiens RADIESSE®" aria-hidden="true"></iframe>
+            <div id="doclocator-map" hidden aria-label="Carte des centres RADIESSE® les plus proches"></div>
           </div>
         </div>
       </div>
@@ -463,6 +471,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
