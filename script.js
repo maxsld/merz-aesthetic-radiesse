@@ -2,6 +2,12 @@ const siteHeader = document.querySelector(".site-header");
 const siteMenuLinks = Array.from(document.querySelectorAll(".site-menu-item"));
 const siteMenuToggle = document.querySelector(".site-menu-toggle");
 
+document.querySelectorAll("sup").forEach((sup) => {
+  if (sup.textContent.trim() === "®") {
+    sup.classList.add("sup-mark");
+  }
+});
+
 /* ---- Mobile menu ---- */
 if (siteHeader && siteMenuToggle) {
   const syncMenuState = (isOpen) => {
@@ -293,6 +299,78 @@ if ("IntersectionObserver" in window) {
     obs.observe(indicationsMedia);
   }
 }
+
+/* ---- Count-up animation for key stats ---- */
+(() => {
+  const counters = Array.from(document.querySelectorAll(".benefit-stats strong, .stat-item strong"));
+  if (!counters.length) return;
+
+  const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+
+  const parseCounter = (text) => {
+    const match = text.trim().match(/^([^0-9]*)(\d+)(.*)$/);
+    if (!match) return null;
+    return {
+      prefix: match[1] || "",
+      value: Number(match[2]),
+      suffix: match[3] || "",
+    };
+  };
+
+  const easeInOutCubic = (t) => (t < 0.5)
+    ? 4 * t * t * t
+    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  const animateCounter = (el) => {
+    if (el.dataset.countAnimated === "true") return;
+
+    const parsed = parseCounter(el.textContent || "");
+    if (!parsed) return;
+
+    el.dataset.countAnimated = "true";
+
+    if (reduceMotion) {
+      el.textContent = `${parsed.prefix}${parsed.value}${parsed.suffix}`;
+      return;
+    }
+
+    const duration = 3400;
+    const start = performance.now();
+
+    const frame = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const currentValue = Math.max(1, Math.round(parsed.value * easeInOutCubic(progress)));
+      el.textContent = `${parsed.prefix}${currentValue}${parsed.suffix}`;
+
+      if (progress < 1) {
+        window.requestAnimationFrame(frame);
+      } else {
+        el.textContent = `${parsed.prefix}${parsed.value}${parsed.suffix}`;
+      }
+    };
+
+    el.textContent = `${parsed.prefix}1${parsed.suffix}`;
+    window.requestAnimationFrame(frame);
+  };
+
+  if (!("IntersectionObserver" in window)) {
+    counters.forEach(animateCounter);
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      animateCounter(entry.target);
+      observer.unobserve(entry.target);
+    });
+  }, {
+    threshold: 0.2,
+    rootMargin: "0px 0px 12% 0px",
+  });
+
+  counters.forEach((counter) => observer.observe(counter));
+})();
 
 /* ---- Doc locator (centres RADIESSE®) ---- */
 (() => {
