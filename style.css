@@ -1431,6 +1431,14 @@ body.header-is-fixed {
   line-height: 1.4;
 }
 
+.moa-callout-process {
+  width: 78%;
+  max-width: 320px;
+  height: auto;
+  display: block;
+  margin: 8px 0 0;
+}
+
 .moa-callout-points {
   display: grid;
   grid-template-columns: 1fr;
@@ -2194,6 +2202,13 @@ body.header-is-fixed {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.55);
   white-space: nowrap;
+}
+
+.footer-reference {
+  margin: 16px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .footer-brand { line-height: 0; white-space: nowrap; }
