@@ -82,11 +82,19 @@ sup {
 }
 
 .sup-mark {
-  font-size: 0.52em;
+  font-size: 0.7em;
   line-height: 0;
-  vertical-align: baseline;
+  vertical-align: super;
   position: relative;
-  top: -0.55em;
+  top: -0.38em;
+}
+
+.sup-reg {
+  font-size: 0.6em;
+  line-height: 0;
+  vertical-align: super;
+  position: relative;
+  top: -0.18em;
 }
 
 a {
@@ -1100,6 +1108,10 @@ body.header-is-fixed {
   color: rgba(23, 55, 87, 0.62) !important;
   font-size: 11px !important;
   line-height: 1.5 !important;
+}
+
+.benefit-footnote-inline {
+  margin-top: -4px !important;
 }
 
 .benefit-center-disclaimer {

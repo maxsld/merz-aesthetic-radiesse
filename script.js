@@ -256,14 +256,11 @@ faqItems.forEach((item) => {
   setFaqPanelHeight(item, item.classList.contains("is-open"));
 
   trigger.addEventListener("click", () => {
-    faqItems.forEach((otherItem) => {
-      const otherTrigger = otherItem.querySelector(".faq-trigger");
-      const shouldOpen = otherItem === item && !otherItem.classList.contains("is-open");
+    const shouldOpen = !item.classList.contains("is-open");
 
-      otherItem.classList.toggle("is-open", shouldOpen);
-      if (otherTrigger) otherTrigger.setAttribute("aria-expanded", String(shouldOpen));
-      setFaqPanelHeight(otherItem, shouldOpen);
-    });
+    item.classList.toggle("is-open", shouldOpen);
+    trigger.setAttribute("aria-expanded", String(shouldOpen));
+    setFaqPanelHeight(item, shouldOpen);
   });
 });
 
