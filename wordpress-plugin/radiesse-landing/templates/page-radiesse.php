@@ -2869,10 +2869,10 @@ body.header-is-fixed  {
             <h3 id="benefit-1-title">Raffermit</h3>
             <p>RADIESSE<sup class="sup-reg">®</sup> améliore la fermeté, l'élasticité et l'hydratation de votre peau.<sup>5</sup></p>
             <ul class="benefit-stats">
-              <li><strong>+31,8%</strong><span>de collagène à 6 mois.<sup>17</sup></span></li>
+              <li><strong>+31,8%</strong><span>de collagène à 3 mois.<sup>17</sup></span></li>
             </ul>
             <p class="benefit-footnote benefit-footnote-inline">(95% IC; 14,6-49,0; P=0,001)</p>
-            <p class="benefit-footnote">Mesuré histologiquement sur prélèvements abdominaux à 6 mois après traitement par CaHA diluée (1:1) vs sérum physiologique (contrôle). D'après les données de Goldie et al., 2025.<sup>17</sup></p>
+            <p class="benefit-footnote">Mesuré histologiquement sur prélèvements abdominaux à 3 mois après traitement par CaHA diluée (1:1) vs sérum physiologique (contrôle). D'après les données de Goldie et al., 2025.<sup>17</sup></p>
             <p class="benefit-footnote">Les données issues de cette étude histologique ne sont pas strictement extrapolables à l'efficacité clinique.</p>
           </div>
         </article>
@@ -3648,10 +3648,6 @@ if ("IntersectionObserver" in window) {
 
   if (!input || !searchButton || !resultsBox || !mapEl) return;
 
-  const MAX_RESULTS = 10;
-  const NEARBY_RADIUS_KM = 50;
-  const FALLBACK_RESULTS = 3;
-
   // Le Clinic Finder charge des ressources externes (tuiles OpenStreetMap, geocoding Nominatim) :
   // elles ne doivent être appelées qu'après consentement cookies (Osano). Adapter le nom de la
   // catégorie ci-dessous si elle diffère de celle configurée par DocCheck sur merzaesthetics.fr.
@@ -3692,6 +3688,10 @@ if ("IntersectionObserver" in window) {
   } else {
     showMapConsentPrompt();
   }
+
+  const MAX_RESULTS = 10;
+  const NEARBY_RADIUS_KM = 50;
+  const FALLBACK_RESULTS = 3;
 
   // Données factices en attendant le CSV des centres (surchargées par window.RADIESSE_CENTERS si un CSV a été importé)
   const CENTERS = window.RADIESSE_CENTERS || [
