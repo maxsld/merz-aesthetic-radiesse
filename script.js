@@ -655,4 +655,6 @@ if ("IntersectionObserver" in window) {
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter") doSearch();
   });
+
+  ensureMap();
 })();
