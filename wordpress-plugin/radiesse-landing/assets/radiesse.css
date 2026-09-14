@@ -611,7 +611,9 @@ body.header-is-fixed {
   gap: clamp(14px, 1.8vw, 22px);
   text-align: left;
   pointer-events: auto;
-  transform: translateX(clamp(160px, 11vw, 220px));
+  /* Décalage vers la droite borné par l'espace réellement disponible à droite,
+     pour que le texte ne soit jamais coupé sur les écrans ~1200-1500px. */
+  transform: translateX(min(clamp(160px, 11vw, 220px), max(0px, (100vw - 1200px) / 2 + 10px)));
 }
 
 .hero-panel-content h1,

@@ -634,7 +634,9 @@ body.header-is-fixed  {
   gap: clamp(14px, 1.8vw, 22px) !important;
   text-align: left !important;
   pointer-events: auto !important;
-  transform: translateX(clamp(160px, 11vw, 220px)) !important;
+  /* Décalage vers la droite borné par l'espace réellement disponible à droite,
+     pour que le texte ne soit jamais coupé sur les écrans ~1200-1500px. */
+  transform: translateX(min(clamp(160px, 11vw, 220px), max(0px, (100vw - 1200px) / 2 + 10px))) !important;
 }
 
 .hero-panel-content h1,
@@ -2088,29 +2090,7 @@ body.header-is-fixed  {
   background: var(--cream) !important;
 }
 
-.doclocator-map-consent  {
-  width: 100% !important;
-  height: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 16px !important;
-  padding: 32px !important;
-  text-align: center !important;
-  background: var(--sky) !important;
-}
-
-.doclocator-map-consent p  {
-  margin: 0 !important;
-  color: var(--blue-dark) !important;
-  font-size: 14px !important;
-  line-height: 1.5 !important;
-  max-width: 320px !important;
-}
-
 /* ---- Doc locator ---- */
-.doclocator-map-consent[hidden],
 #doclocator-map[hidden]  {
   display: none !important;
 }
@@ -3159,10 +3139,6 @@ body.header-is-fixed  {
           </div>
 
           <div class="cta-map">
-            <div id="doclocator-map-consent" class="doclocator-map-consent">
-              <p>La carte des centres RADIESSE<sup class="sup-reg">®</sup> nécessite votre consentement aux cookies pour s'afficher.</p>
-              <button type="button" class="watch-btn" data-open-consent>Gérer mes préférences cookies</button>
-            </div>
             <div id="doclocator-map" hidden aria-label="Carte des centres RADIESSE® les plus proches"></div>
           </div>
         </div>
@@ -3644,50 +3620,8 @@ if ("IntersectionObserver" in window) {
   const countEl = document.getElementById("doclocator-count");
   const listEl = document.getElementById("doclocator-list");
   const mapEl = document.getElementById("doclocator-map");
-  const mapConsentBox = document.getElementById("doclocator-map-consent");
 
   if (!input || !searchButton || !resultsBox || !mapEl) return;
-
-  // Le Clinic Finder charge des ressources externes (tuiles OpenStreetMap, geocoding Nominatim) :
-  // elles ne doivent être appelées qu'après consentement cookies (Osano). Adapter le nom de la
-  // catégorie ci-dessous si elle diffère de celle configurée par DocCheck sur merzaesthetics.fr.
-  const CONSENT_CATEGORY = "MARKETING";
-
-  const hasMapConsent = () => {
-    try {
-      return window.Osano?.cm?.[CONSENT_CATEGORY.toLowerCase()] === "ACCEPT";
-    } catch (e) {
-      return false;
-    }
-  };
-
-  const showMapConsentPrompt = () => {
-    if (mapConsentBox) mapConsentBox.hidden = false;
-    mapEl.hidden = true;
-  };
-
-  const hideMapConsentPrompt = () => {
-    if (mapConsentBox) mapConsentBox.hidden = true;
-  };
-
-  mapConsentBox?.querySelector("[data-open-consent]")?.addEventListener("click", () => {
-    window.Osano?.cm?.showDrawer?.("osano-cm-dom-info-dialog");
-  });
-
-  // Recharge la page une fois le consentement accordé, pour repartir sur un état propre
-  // (comme demandé pour la conformité RGPD) — armé uniquement si la carte était bloquée au chargement.
-  let mapConsentReloadArmed = !hasMapConsent();
-  document.addEventListener("osano-cm-consent-saved", () => {
-    if (mapConsentReloadArmed && hasMapConsent()) {
-      window.location.reload();
-    }
-  });
-
-  if (hasMapConsent()) {
-    hideMapConsentPrompt();
-  } else {
-    showMapConsentPrompt();
-  }
 
   const MAX_RESULTS = 10;
   const NEARBY_RADIUS_KM = 50;
@@ -3780,7 +3714,6 @@ if ("IntersectionObserver" in window) {
 
   const ensureMap = () => {
     if (map) return map;
-    hideMapConsentPrompt();
     mapEl.hidden = false;
     map = L.map(mapEl, { zoomControl: true }).setView([46.8, 2.3], 6);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -3941,14 +3874,6 @@ if ("IntersectionObserver" in window) {
     const rawQuery = input.value.trim();
     if (!rawQuery) return;
 
-    if (!hasMapConsent()) {
-      showMapConsentPrompt();
-      countEl.textContent = "Veuillez accepter les cookies pour afficher la carte des centres.";
-      listEl.innerHTML = "";
-      resultsBox.hidden = false;
-      return;
-    }
-
     window._mtm = window._mtm || [];
     window._mtm.push({ event: "docsearch_searchbar" });
 
@@ -3978,6 +3903,8 @@ if ("IntersectionObserver" in window) {
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter") doSearch();
   });
+
+  ensureMap();
 })();
 
 document.addEventListener("click", (event) => {
