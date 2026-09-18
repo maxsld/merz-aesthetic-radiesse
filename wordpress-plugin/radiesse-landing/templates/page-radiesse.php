@@ -3623,7 +3623,7 @@ if ("IntersectionObserver" in window) {
 
   if (!input || !searchButton || !resultsBox || !mapEl) return;
 
-  const MAX_RESULTS = 10;
+  const MAX_RESULTS = 50;
   const NEARBY_RADIUS_KM = 50;
   const FALLBACK_RESULTS = 3;
 
@@ -3787,12 +3787,30 @@ if ("IntersectionObserver" in window) {
     return code && DEPT_COORDS[code] ? { lat: DEPT_COORDS[code][0], lng: DEPT_COORDS[code][1] } : null;
   };
 
-  const geocodeLocation = (query) => {
+  // Base Adresse Nationale : bien plus fiable que Nominatim sur les codes postaux
+  // francais ("75012" -> Paris 12e, et non le centre du departement).
+  const geocodeBAN = (query) => {
+    const url = `https://api-adresse.data.gouv.fr/search/?limit=1&q=${encodeURIComponent(query)}`;
+    return fetch(url, { headers: { Accept: "application/json" } })
+      .then((response) => { if (!response.ok) throw new Error(); return response.json(); })
+      .then((data) => {
+        const hit = data?.features?.[0];
+        return hit ? { lat: hit.geometry.coordinates[1], lng: hit.geometry.coordinates[0] } : null;
+      });
+  };
+
+  // Repli Nominatim : couvre Monaco et les libelles que la BAN ne connait pas.
+  const geocodeNominatim = (query) => {
     const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=fr,mc&q=${encodeURIComponent(query)}`;
     return fetch(url, { headers: { Accept: "application/json" } })
       .then((response) => { if (!response.ok) throw new Error(); return response.json(); })
       .then((data) => (data?.length ? { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) } : null));
   };
+
+  const geocodeLocation = (query) =>
+    geocodeBAN(query)
+      .catch(() => null)
+      .then((location) => location || geocodeNominatim(query).catch(() => null));
 
   const renderCenterList = (items) => {
     listEl.innerHTML = "";
@@ -3877,26 +3895,31 @@ if ("IntersectionObserver" in window) {
     window._mtm = window._mtm || [];
     window._mtm.push({ event: "docsearch_searchbar" });
 
-    const coords = zipToCoords(rawQuery) || cityToCoords(rawQuery);
-    if (coords) {
-      showNearest(coords.lat, coords.lng, rawQuery);
-      return;
-    }
-
+    // On geocode d'abord la saisie : un code postal doit pointer sur SA commune,
+    // pas sur le centre du departement. Les tables DEPT_COORDS / CITY_TO_DEPT ne
+    // servent plus que de repli si le service de geocodage est injoignable.
     countEl.textContent = `Recherche autour de « ${rawQuery} »…`;
     listEl.innerHTML = "";
     resultsBox.hidden = false;
+
+    const fallback = () => {
+      const coords = zipToCoords(rawQuery) || cityToCoords(rawQuery);
+      if (coords) {
+        showNearest(coords.lat, coords.lng, rawQuery);
+        return;
+      }
+      countEl.textContent = `Aucun centre trouvé pour « ${rawQuery} ». Essayez un code postal.`;
+    };
+
     geocodeLocation(rawQuery)
       .then((location) => {
         if (!location) {
-          countEl.textContent = `Aucun centre trouvé pour « ${rawQuery} ». Essayez un code postal.`;
+          fallback();
           return;
         }
         showNearest(location.lat, location.lng, rawQuery);
       })
-      .catch(() => {
-        countEl.textContent = `Aucun centre trouvé pour « ${rawQuery} ». Essayez un code postal.`;
-      });
+      .catch(fallback);
   };
 
   searchButton.addEventListener("click", doSearch);

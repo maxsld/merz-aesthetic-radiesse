@@ -1,2 +1,9 @@
-name,street,streetNumber,zip,city,country
-Centre Esthétique Saint-Honoré,Rue de Ponthieu,12,75008,Paris,France
+﻿name,street,streetNumber,zip,city,country,lat,lng
+Centre Esthétique du Faubourg,Rue de Ponthieu,12,75008,Paris,France,,
+Cabinet Médical des Lilas,Avenue de la Bourdonnais,85,75007,Paris,France,,
+Institut Dermatologique Bellecour,Quai Jean Moulin,9 bis,69001,Lyon,France,,
+"Clinique Esthétique du Prado, Cabinet Sud",Rue Roux de Brignoles,13,13006,Marseille,France,,
+Centre Médical Caudéran,Rue Falquet,12,33200,Bordeaux,France,,
+Cabinet Wilson Esthétique,Place du Président Wilson,3,31000,Toulouse,France,,
+Maison de Santé Graslin,Place Aristide Briand,5,44000,Nantes,France,47.217029,-1.563169
+Centre Dermatologique Neudorf,Route du Polygone,104,67100,Strasbourg,France,48.5734,7.7521
