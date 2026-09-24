@@ -439,7 +439,11 @@ body.header-is-fixed  {
 /* ===================== HERO ===================== */
 .hero  {
   position: relative !important;
-  height: 64vh !important;
+  /* Ratio releve sur la maquette de reference (2970x983). En figeant la
+     hauteur sur la largeur, le cadre "R" en background: contain garde
+     exactement la meme place quelle que soit la hauteur de la fenetre. */
+  aspect-ratio: 2970 / 983 !important;
+  height: auto !important;
   overflow: hidden !important;
   background: #007ea8 !important;
 }
@@ -715,7 +719,7 @@ body.header-is-fixed  {
 /* ---- Responsive hero ---- */
 @media (max-width: 1200px)  {
   .hero  {
-  height: 64vh !important;
+  height: auto !important;
 }
 
   .hero-video-shell  {
@@ -770,6 +774,7 @@ body.header-is-fixed  {
 @media (max-width: 1100px)  {
   .hero  {
   height: auto !important;
+  aspect-ratio: auto !important;
 }
 
   .hero-video-shell  {
