@@ -617,22 +617,23 @@ body.header-is-fixed  {
   pointer-events: none !important;
 }
 
+/* La colonne bleue va de 55% (bord le plus large du R) a 100% de la fenetre.
+   Le panneau debordant de -2% a gauche, cela fait 45/102 = 44.12% de sa largeur.
+   Le bloc de texte y est centre, donc sa position est identique a toutes les tailles. */
 .hero-panel-inner  {
-  width: min(100%, 1200px) !important;
-  margin: 0 auto !important;
-  padding: 0 34px !important;
+  width: 44.12% !important;
+  margin: 0 0 0 auto !important;
+  padding: 0 clamp(16px, 1.6vw, 32px) !important;
   display: flex !important;
-  justify-content: flex-end !important;
+  justify-content: center !important;
 }
 
 /* Contenu texte : décalé à droite du R (≈ 22% de la largeur du panel) */
 .hero-panel-content  {
-  /* La colonne doit grandir avec la police (jusqu'a 52px), sinon le titre
-     se casse en 5 lignes au-dela de 1536px au lieu des 3 prevues. */
-  --hero-copy-width: clamp(31rem, 36vw, 40rem) !important;
-  width: min(100%, 40rem) !important;
-  max-width: calc(100vw - 120px) !important;
-  margin-left: auto !important;
+  --hero-copy-width: 100% !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
   padding: 0 !important;
   display: flex !important;
   flex-direction: column !important;
@@ -640,9 +641,6 @@ body.header-is-fixed  {
   gap: clamp(14px, 1.8vw, 22px) !important;
   text-align: left !important;
   pointer-events: auto !important;
-  /* Décalage vers la droite borné par l'espace réellement disponible à droite,
-     pour que le texte ne soit jamais coupé sur les écrans ~1200-1500px. */
-  transform: translateX(min(clamp(160px, 11vw, 220px), max(0px, (100vw - 1200px) / 2 + 10px))) !important;
 }
 
 .hero-panel-content h1,
@@ -655,7 +653,9 @@ body.header-is-fixed  {
   margin: 0 !important;
   color: #fff !important;
   font-family: "Aeonik Pro", Arial, Helvetica, sans-serif !important;
-  font-size: clamp(28px, 3vw, 52px) !important;
+  /* Pas de plafond : au-dela de 1740px la police suit la largeur, sinon le
+     bloc rapetisse par rapport a la zone bleue. */
+  font-size: max(28px, 3vw) !important;
   font-weight: 300 !important;
   line-height: 1.12 !important;
   text-transform: uppercase !important;
@@ -671,7 +671,7 @@ body.header-is-fixed  {
   margin: 0 !important;
   color: rgba(255,255,255,0.9) !important;
   font-family: Arial, Helvetica, sans-serif !important;
-  font-size: clamp(12px, 1.15vw, 17px) !important;
+  font-size: max(12px, 1.15vw) !important;
   line-height: 1.62 !important;
   overflow-wrap: anywhere !important;
   text-align: left !important;
@@ -683,12 +683,13 @@ body.header-is-fixed  {
   align-items: center !important;
   justify-content: center !important;
   align-self: flex-start !important;
-  min-height: 53px !important;
-  padding: 18px 22px !important;
+  /* Le bouton suit lui aussi la largeur, pour rester proportionne au texte. */
+  min-height: max(53px, 3.04vw) !important;
+  padding: max(18px, 1.03vw) max(22px, 1.26vw) !important;
   border: 0 !important;
   background: var(--blue-dark) !important;
   color: #fff !important;
-  font-size: 15px !important;
+  font-size: max(15px, 0.86vw) !important;
   font-weight: 500 !important;
   letter-spacing: 0 !important;
   line-height: 1.15 !important;
@@ -727,18 +728,13 @@ body.header-is-fixed  {
 }
 
   .hero-panel-inner  {
-  padding: 0 24px !important;
+  width: 47.06% !important;
+  padding: 0 16px !important;
 }
 
   .hero-panel-content  {
-  --hero-copy-width: 29rem !important;
-  width: min(100%, 500px) !important;
-  max-width: calc(100vw - 72px) !important;
   padding-top: 0 !important;
   gap: 16px !important;
-  /* Le panneau occupe toute la largeur ici, avec 24px de padding : un decalage
-     superieur pousserait le texte hors de l'ecran entre 1100 et 1200px. */
-  transform: translateX(min(clamp(16px, 2.8vw, 40px), 8px)) !important;
 }
 
   .hero-panel-content h1,
