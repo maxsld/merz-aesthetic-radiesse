@@ -630,9 +630,14 @@ body.header-is-fixed  {
 
 /* Contenu texte : décalé à droite du R (≈ 22% de la largeur du panel) */
 .hero-panel-content  {
-  --hero-copy-width: 100% !important;
-  width: 100% !important;
-  max-width: none !important;
+  /* La plus longue ligne du titre mesure 10.49 fois la taille de police,
+     quelle que soit la largeur. On cale la description sur cette mesure
+     (10.6 pour la marge d'arrondi) et le bloc se reduit a cette largeur,
+     ce qui le centre correctement dans la zone bleue. */
+  --hero-title-size: max(28px, 3vw) !important;
+  --hero-copy-width: calc(10.6 * var(--hero-title-size)) !important;
+  width: fit-content !important;
+  max-width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
   display: flex !important;
@@ -650,12 +655,14 @@ body.header-is-fixed  {
 }
 
 .hero-panel-content h1  {
+  /* max-content : le titre garde ses 3 lignes meme si la police de repli a des
+     metriques plus larges que prevu. */
+  width: max-content !important;
+  max-width: 100% !important;
   margin: 0 !important;
   color: #fff !important;
   font-family: "Aeonik Pro", Arial, Helvetica, sans-serif !important;
-  /* Pas de plafond : au-dela de 1740px la police suit la largeur, sinon le
-     bloc rapetisse par rapport a la zone bleue. */
-  font-size: max(28px, 3vw) !important;
+  font-size: var(--hero-title-size) !important;
   font-weight: 300 !important;
   line-height: 1.12 !important;
   text-transform: uppercase !important;
@@ -733,6 +740,7 @@ body.header-is-fixed  {
 }
 
   .hero-panel-content  {
+  --hero-title-size: clamp(24px, 2.4vw, 42px) !important;
   padding-top: 0 !important;
   gap: 16px !important;
 }
@@ -743,7 +751,7 @@ body.header-is-fixed  {
 }
 
   .hero-panel-content h1  {
-  font-size: clamp(24px, 2.4vw, 42px) !important;
+  font-size: var(--hero-title-size) !important;
 }
 
   .hero-description  {
@@ -807,7 +815,7 @@ body.header-is-fixed  {
 
   .hero-panel-content h1,
   .hero-description  {
-  width: 100% !important;
+  width: 100% !important;  max-width: none !important;
 }
 
   .hero-cta  {

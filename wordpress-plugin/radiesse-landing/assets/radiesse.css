@@ -608,9 +608,14 @@ body.header-is-fixed {
 
 /* Contenu texte : décalé à droite du R (≈ 22% de la largeur du panel) */
 .hero-panel-content {
-  --hero-copy-width: 100%;
-  width: 100%;
-  max-width: none;
+  /* La plus longue ligne du titre mesure 10.49 fois la taille de police,
+     quelle que soit la largeur. On cale la description sur cette mesure
+     (10.6 pour la marge d'arrondi) et le bloc se reduit a cette largeur,
+     ce qui le centre correctement dans la zone bleue. */
+  --hero-title-size: max(28px, 3vw);
+  --hero-copy-width: calc(10.6 * var(--hero-title-size));
+  width: fit-content;
+  max-width: 100%;
   margin: 0;
   padding: 0;
   display: flex;
@@ -628,12 +633,15 @@ body.header-is-fixed {
 }
 
 .hero-panel-content h1 {
+  /* max-content : le titre garde ses 3 lignes meme si la police de repli a des
+     metriques plus larges que prevu. Au pire la description est un peu plus
+     etroite que lui, jamais l'inverse. */
+  width: max-content;
+  max-width: 100%;
   margin: 0;
   color: #fff;
   font-family: "Aeonik Pro", Arial, Helvetica, sans-serif;
-  /* Pas de plafond : au-dela de 1740px la police doit continuer de suivre la
-     largeur, sinon le bloc rapetisse par rapport a la zone bleue. */
-  font-size: max(28px, 3vw);
+  font-size: var(--hero-title-size);
   font-weight: 300;
   line-height: 1.12;
   text-transform: uppercase;
@@ -710,6 +718,7 @@ body.header-is-fixed {
   }
 
   .hero-panel-content {
+    --hero-title-size: clamp(24px, 2.4vw, 42px);
     padding-top: 0;
     gap: 16px;
   }
@@ -720,7 +729,7 @@ body.header-is-fixed {
   }
 
   .hero-panel-content h1 {
-    font-size: clamp(24px, 2.4vw, 42px);
+    font-size: var(--hero-title-size);
   }
 
   .hero-description {
@@ -783,6 +792,7 @@ body.header-is-fixed {
   .hero-panel-content h1,
   .hero-description {
     width: 100%;
+    max-width: none;
   }
 
   .hero-cta {
