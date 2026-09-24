@@ -7,7 +7,11 @@ defined('ABSPATH') || exit;
   <meta charset="<?php bloginfo('charset'); ?>">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RADIESSE® - Merzaesthetics France</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="<?php echo esc_url(RADIESSE_LANDING_URL); ?>assets/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url(RADIESSE_LANDING_URL); ?>assets/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="<?php echo esc_url(RADIESSE_LANDING_URL); ?>assets/img/favicon-16x16.png">
   <link rel="icon" type="image/x-icon" href="<?php echo esc_url(RADIESSE_LANDING_URL); ?>assets/img/favicon.ico">
+  <link rel="mask-icon" href="<?php echo esc_url(RADIESSE_LANDING_URL); ?>assets/img/safari-pinned-tab.svg" color="#5bbad5">
   <link rel="stylesheet" href="<?php echo esc_url(RADIESSE_LANDING_URL); ?>assets/vendor/font-awesome.min.css">
   <link rel="stylesheet" href="<?php echo esc_url(RADIESSE_LANDING_URL); ?>assets/vendor/leaflet/leaflet.min.css">
   <?php wp_head(); ?>
