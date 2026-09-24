@@ -600,8 +600,10 @@ body.header-is-fixed {
 
 /* Contenu texte : décalé à droite du R (≈ 22% de la largeur du panel) */
 .hero-panel-content {
-  --hero-copy-width: 31rem;
-  width: min(100%, 560px);
+  /* La colonne doit grandir avec la police (jusqu'a 52px), sinon le titre
+     se casse en 5 lignes au-dela de 1536px au lieu des 3 prevues. */
+  --hero-copy-width: clamp(31rem, 36vw, 40rem);
+  width: min(100%, 40rem);
   max-width: calc(100vw - 120px);
   margin-left: auto;
   padding: 0;
@@ -704,7 +706,9 @@ body.header-is-fixed {
     max-width: calc(100vw - 72px);
     padding-top: 0;
     gap: 16px;
-    transform: translateX(clamp(16px, 2.8vw, 40px));
+    /* Le panneau occupe toute la largeur ici, avec 24px de padding : un decalage
+       superieur pousserait le texte hors de l'ecran entre 1100 et 1200px. */
+    transform: translateX(min(clamp(16px, 2.8vw, 40px), 8px));
   }
 
   .hero-panel-content h1,

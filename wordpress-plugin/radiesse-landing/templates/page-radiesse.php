@@ -623,8 +623,10 @@ body.header-is-fixed  {
 
 /* Contenu texte : décalé à droite du R (≈ 22% de la largeur du panel) */
 .hero-panel-content  {
-  --hero-copy-width: 31rem !important;
-  width: min(100%, 560px) !important;
+  /* La colonne doit grandir avec la police (jusqu'a 52px), sinon le titre
+     se casse en 5 lignes au-dela de 1536px au lieu des 3 prevues. */
+  --hero-copy-width: clamp(31rem, 36vw, 40rem) !important;
+  width: min(100%, 40rem) !important;
   max-width: calc(100vw - 120px) !important;
   margin-left: auto !important;
   padding: 0 !important;
@@ -730,7 +732,9 @@ body.header-is-fixed  {
   max-width: calc(100vw - 72px) !important;
   padding-top: 0 !important;
   gap: 16px !important;
-  transform: translateX(clamp(16px, 2.8vw, 40px)) !important;
+  /* Le panneau occupe toute la largeur ici, avec 24px de padding : un decalage
+     superieur pousserait le texte hors de l'ecran entre 1100 et 1200px. */
+  transform: translateX(min(clamp(16px, 2.8vw, 40px), 8px)) !important;
 }
 
   .hero-panel-content h1,
@@ -2807,7 +2811,7 @@ body.header-is-fixed  {
               renforcer durablement<sup class="sup-mark">** 7-9</sup> la structure<sup class="sup-mark">* 5</sup> et la qualité de votre peau.<sup>1-3</sup>
             </p>
             <a class="hero-cta" href="#praticien">
-              RADIESSE<sup class="sup-reg">®</sup> autour de chez vous
+              <span class="hero-cta-label">RADIESSE<sup class="sup-reg">®</sup> autour de chez vous</span>
             </a>
             
           </div>
