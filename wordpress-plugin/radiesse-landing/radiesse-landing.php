@@ -2,7 +2,7 @@
 /**
  * Plugin Name:  RADIESSE® – Landing Page
  * Description:  Standalone page template for the RADIESSE® France landing page. Does not interfere with the active theme.
- * Version:      1.1.0
+ * Version:      1.2.0
  * Author:       Merz Aesthetics France
  * License:      GPL-2.0-or-later
  * License URI:  https://www.gnu.org/licenses/gpl-2.0.html
@@ -57,6 +57,19 @@ add_action( 'wp_head', function () {
     }
 } );
 
+// ── 4b. Export CSV ───────────────────────────────────────────────────────────
+// Sur admin_init : declenche avant tout affichage. Appele depuis le rendu de la
+// page, les en-tetes HTTP arrivaient trop tard et le CSV etait ajoute a la fin
+// du HTML de l'admin, donnant un fichier inutilisable.
+add_action( 'admin_init', function () {
+    if ( ! isset( $_GET['page'], $_GET['radiesse_export'] ) ) return;
+    if ( $_GET['page'] !== 'radiesse-landing-centers' ) return;
+    if ( ! current_user_can( 'manage_options' ) ) return;
+    check_admin_referer( 'radiesse_export' );
+    radiesse_landing_export_csv();
+    exit;
+} );
+
 // ── 5. Admin page — CSV import ───────────────────────────────────────────────
 add_action( 'admin_menu', function () {
     add_menu_page(
@@ -104,12 +117,6 @@ function radiesse_landing_admin_page() {
         check_admin_referer( 'radiesse_csv_import' );
         delete_option( 'radiesse_centers' );
         $message = 'Liste réinitialisée (données par défaut du plugin).';
-    }
-
-    // ── Handle CSV export ────────────────────────────────────────────────────
-    if ( isset( $_GET['radiesse_export'] ) && check_admin_referer( 'radiesse_export' ) ) {
-        radiesse_landing_export_csv();
-        exit;
     }
 
     $centers  = get_option( 'radiesse_centers' );
