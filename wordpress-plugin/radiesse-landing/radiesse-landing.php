@@ -2,7 +2,7 @@
 /**
  * Plugin Name:  RADIESSE® – Landing Page
  * Description:  Standalone page template for the RADIESSE® France landing page. Does not interfere with the active theme.
- * Version:      1.0.0
+ * Version:      1.1.0
  * Author:       Merz Aesthetics France
  * License:      GPL-2.0-or-later
  * License URI:  https://www.gnu.org/licenses/gpl-2.0.html
@@ -83,12 +83,18 @@ function radiesse_landing_admin_page() {
         if ( empty( $_FILES['csv_file']['tmp_name'] ) ) {
             $error = 'Aucun fichier sélectionné.';
         } else {
-            $result = radiesse_landing_parse_csv( $_FILES['csv_file']['tmp_name'] );
+            $report = null;
+            $result = radiesse_landing_parse_csv( $_FILES['csv_file']['tmp_name'], $report );
             if ( is_wp_error( $result ) ) {
                 $error = $result->get_error_message();
             } else {
                 update_option( 'radiesse_centers', $result, false );
                 $message = count( $result ) . ' centre(s) importé(s) avec succès.';
+                if ( ! empty( $report['skipped'] ) ) {
+                    $error = count( $report['skipped'] ) . ' centre(s) écarté(s), adresse non localisable : '
+                           . implode( ' ; ', array_slice( $report['skipped'], 0, 20 ) )
+                           . ( count( $report['skipped'] ) > 20 ? ' …' : '' );
+                }
             }
         }
     }
@@ -137,11 +143,17 @@ function radiesse_landing_admin_page() {
         <div style="background:#fff;border:1px solid #ccd0d4;border-radius:4px;padding:24px;max-width:700px;margin-top:20px;">
             <h2 style="margin-top:0;">Importer un nouveau CSV</h2>
 
-            <p>Le fichier CSV doit avoir les colonnes suivantes (séparateur virgule, encodage UTF-8) :</p>
+            <p>Le fichier CSV doit contenir ces colonnes (séparateur virgule ou point-virgule, encodage UTF-8) :</p>
             <code style="display:block;background:#f0f0f0;padding:10px;border-radius:4px;margin-bottom:16px;">
                 name, street, streetNumber, zip, city, country
             </code>
-            <p>Les coordonnées GPS (lat/lng) sont calculées automatiquement via l'adresse.</p>
+            <p><strong>Les en-têtes de l'export Merz sont acceptés tels quels</strong>, aucun renommage n'est
+               nécessaire : <code>Name Doc Loc</code>, <code>Street Name</code>, <code>Postal Code</code>,
+               <code>VILLE</code>, <code>Country</code>. Le numéro de rue est isolé automatiquement
+               s'il est collé au libellé (« 165 ROUTE DE NIMES »).</p>
+            <p>Les coordonnées GPS (lat/lng) sont calculées automatiquement via l'adresse. Ajoutez des
+               colonnes <code>lat</code> et <code>lng</code> au fichier pour éviter cette étape sur les
+               gros imports.</p>
 
             <p><a href="<?php echo esc_url( RADIESSE_LANDING_URL . 'assets/centers-template.csv' ); ?>" class="button" download>⬇ Télécharger le modèle CSV</a></p>
 
@@ -197,7 +209,74 @@ function radiesse_landing_admin_page() {
     <?php
 }
 
-function radiesse_landing_parse_csv( $filepath ) {
+/**
+ * Normalise un en-tete pour la comparaison : sans accents, sans espaces,
+ * sans ponctuation, en minuscules. "Postal Code" et "postal_code" donnent
+ * tous les deux "postalcode".
+ */
+function radiesse_landing_normalize_key( $h ) {
+    $h = ltrim( trim( (string) $h ), "\xEF\xBB\xBF" );
+    if ( function_exists( 'iconv' ) ) {
+        $t = @iconv( 'UTF-8', 'ASCII//TRANSLIT', $h );
+        if ( $t !== false ) $h = $t;
+    }
+    return preg_replace( '/[^a-z0-9]/', '', strtolower( $h ) );
+}
+
+/**
+ * Noms de colonnes acceptes pour chaque champ. Le premier est le nom canonique.
+ * On accepte les en-tetes bruts de l'export Merz ("Name Doc Loc", "Street Name",
+ * "Postal Code", "VILLE") pour qu'aucun renommage ne soit necessaire avant import.
+ */
+function radiesse_landing_header_aliases() {
+    return [
+        'name'         => [ 'name', 'namedocloc', 'nomdocloc', 'nom', 'centre', 'center' ],
+        'street'       => [ 'street', 'streetname', 'rue', 'adresse', 'address' ],
+        'streetNumber' => [ 'streetnumber', 'numero', 'numerorue', 'housenumber' ],
+        'zip'          => [ 'zip', 'zipcode', 'postalcode', 'codepostal', 'cp' ],
+        'city'         => [ 'city', 'ville', 'town' ],
+        'country'      => [ 'country', 'pays' ],
+        'lat'          => [ 'lat', 'latitude' ],
+        'lng'          => [ 'lng', 'lon', 'long', 'longitude' ],
+    ];
+}
+
+/**
+ * Associe chaque champ a l'indice de colonne correspondant. Si plusieurs colonnes
+ * peuvent convenir (un fichier contenant a la fois "ZIP" et "Postal Code"), on
+ * retient celle qui contient reellement des donnees exploitables.
+ */
+function radiesse_landing_map_columns( $headers, $rows ) {
+    $map = [];
+    foreach ( radiesse_landing_header_aliases() as $field => $aliases ) {
+        $candidates = [];
+        foreach ( $headers as $i => $h ) {
+            if ( in_array( radiesse_landing_normalize_key( $h ), $aliases, true ) ) {
+                $candidates[] = $i;
+            }
+        }
+        if ( ! $candidates ) continue;
+        if ( count( $candidates ) === 1 ) { $map[ $field ] = $candidates[0]; continue; }
+
+        $best = null; $bestScore = -1;
+        foreach ( $candidates as $i ) {
+            $score = 0;
+            foreach ( $rows as $r ) {
+                if ( ! isset( $r[ $i ] ) ) continue;
+                $v = trim( $r[ $i ] );
+                if ( $v === '' ) continue;
+                $score++;
+                // un code postal francais tient en 5 chiffres : ca departage ZIP et Postal Code
+                if ( $field === 'zip' && preg_match( '/^\d{5}$/', $v ) ) $score += 2;
+            }
+            if ( $score > $bestScore ) { $bestScore = $score; $best = $i; }
+        }
+        $map[ $field ] = $best;
+    }
+    return $map;
+}
+
+function radiesse_landing_parse_csv( $filepath, &$report = null ) {
     $handle = fopen( $filepath, 'r' );
     if ( ! $handle ) {
         return new WP_Error( 'csv_open', 'Impossible d\'ouvrir le fichier.' );
@@ -208,52 +287,87 @@ function radiesse_landing_parse_csv( $filepath ) {
     rewind( $handle );
     $separator = ( substr_count( $first_line, ';' ) > substr_count( $first_line, ',' ) ) ? ';' : ',';
 
-    $headers  = null;
-    $required = [ 'name', 'city', 'zip', 'country' ];
-    $centers  = [];
-
-    while ( ( $row = fgetcsv( $handle, 1000, $separator ) ) !== false ) {
-        // Skip empty rows
-        if ( count( $row ) < 2 || ( count( $row ) === 1 && trim( $row[0] ) === '' ) ) continue;
-
+    $headers = null;
+    $rows    = [];
+    while ( ( $row = fgetcsv( $handle, 4096, $separator ) ) !== false ) {
+        if ( count( $row ) < 2 || ( count( $row ) === 1 && trim( (string) $row[0] ) === '' ) ) continue;
         if ( $headers === null ) {
             $headers = array_map( 'trim', $row );
-            // Strip UTF-8 BOM from first header (added by Excel)
             $headers[0] = ltrim( $headers[0], "\xEF\xBB\xBF" );
-            // Validate required columns
-            foreach ( $required as $col ) {
-                if ( ! in_array( $col, $headers, true ) ) {
-                    fclose( $handle );
-                    return new WP_Error( 'csv_headers', "Colonne manquante : \"$col\". Colonnes trouvées : " . implode( ', ', $headers ) );
-                }
-            }
             continue;
         }
+        // on tolere une ligne plus courte ou plus longue que l'en-tete
+        $rows[] = $row;
+    }
+    fclose( $handle );
 
-        if ( count( $row ) !== count( $headers ) ) continue;
+    if ( $headers === null ) {
+        return new WP_Error( 'csv_empty', 'Fichier vide : aucune ligne d\'en-tete trouvee.' );
+    }
 
-        $p = array_combine( $headers, array_map( 'trim', $row ) );
+    $map      = radiesse_landing_map_columns( $headers, $rows );
+    $required = [ 'name', 'city', 'zip', 'country' ];
+    $missing  = [];
+    foreach ( $required as $f ) {
+        if ( ! isset( $map[ $f ] ) ) $missing[] = $f;
+    }
+    if ( $missing ) {
+        $aliases = radiesse_landing_header_aliases();
+        $hints   = [];
+        foreach ( $missing as $f ) {
+            $hints[] = sprintf( '"%s" (accepte aussi : %s)', $f, implode( ', ', array_slice( $aliases[ $f ], 1 ) ) );
+        }
+        return new WP_Error( 'csv_headers',
+            'Colonne(s) manquante(s) : ' . implode( ' ; ', $hints ) .
+            '. Colonnes trouvees : ' . implode( ', ', $headers ) );
+    }
 
-        // Cast lat/lng if provided
-        if ( isset( $p['lat'] ) && $p['lat'] !== '' ) $p['lat'] = (float) $p['lat'];
-        if ( isset( $p['lng'] ) && $p['lng'] !== '' ) $p['lng'] = (float) $p['lng'];
+    $centers = [];
+    $skipped = [];
+    foreach ( $rows as $row ) {
+        $p = [];
+        foreach ( $map as $field => $i ) {
+            $p[ $field ] = isset( $row[ $i ] ) ? trim( (string) $row[ $i ] ) : '';
+        }
+        foreach ( [ 'name', 'street', 'streetNumber', 'zip', 'city', 'country', 'lat', 'lng' ] as $f ) {
+            if ( ! isset( $p[ $f ] ) ) $p[ $f ] = '';
+        }
+        if ( $p['name'] === '' ) continue;
 
-        // Geocode if lat/lng missing
-        if ( ! isset( $p['lat'] ) || $p['lat'] === '' || ! isset( $p['lng'] ) || $p['lng'] === '' ) {
+        // L'export Merz met le numero dans le libelle de rue ("165 ROUTE DE NIMES").
+        // On l'isole pour que l'adresse affichee et l'itineraire soient corrects.
+        if ( $p['streetNumber'] === '' && $p['street'] !== ''
+             && preg_match( '/^\s*(\d+\s*(?:bis|ter|quater|[a-z])?)\s+(.+)$/iu', $p['street'], $m ) ) {
+            $p['streetNumber'] = trim( $m[1] );
+            $p['street']       = trim( $m[2] );
+        }
+
+        if ( $p['lat'] !== '' ) $p['lat'] = (float) str_replace( ',', '.', $p['lat'] );
+        if ( $p['lng'] !== '' ) $p['lng'] = (float) str_replace( ',', '.', $p['lng'] );
+
+        if ( $p['lat'] === '' || $p['lng'] === '' ) {
             $coords = radiesse_landing_geocode( $p );
             if ( $coords ) {
                 $p['lat'] = $coords['lat'];
                 $p['lng'] = $coords['lng'];
             }
         }
+        // Un centre sans coordonnees casserait le marqueur sur la carte : on
+        // l'ecarte, mais on le signale pour qu'il ne disparaisse pas en silence.
+        if ( $p['lat'] === '' || $p['lng'] === '' ) {
+            $skipped[] = $p['name'] . ' (' . trim( $p['zip'] . ' ' . $p['city'] ) . ')';
+            continue;
+        }
 
         $centers[] = $p;
     }
 
-    fclose( $handle );
+    $report = [ 'skipped' => $skipped, 'total_lignes' => count( $rows ) ];
 
     if ( empty( $centers ) ) {
-        return new WP_Error( 'csv_empty', 'Aucun centre trouvé dans le fichier.' );
+        return new WP_Error( 'csv_empty',
+            'Aucun centre exploitable : les ' . count( $rows ) . ' ligne(s) lues n\'ont pas pu etre geocodees. '
+            . 'Verifiez les adresses, ou ajoutez des colonnes lat et lng au fichier.' );
     }
 
     return $centers;
